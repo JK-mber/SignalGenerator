@@ -180,6 +180,9 @@ class SineGenerator:
     def phase(self, phase):
         self._phase = phase % (np.pi*2)
 
+if __name__ == "__main__":
 
+    sg = SineGenerator(fs=100, f=12.5)
 
-
+    for i in range(20):
+        print(sg.get_samples(1))
