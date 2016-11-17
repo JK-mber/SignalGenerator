@@ -175,11 +175,14 @@ class SineGenerator:
 
 print(__name__)
 if __name__ == "__main__":
+    import matplotlib.pyplot as plt
 
-    sg = SineGenerator(fs=100, f=12.5)
-    print(sg.get_samples(T=0.1))
-    print(sg.get_samples(N=5))
+    sig = np.array([])
+    sg1 = SineGenerator(fs=100, f=12.5)
+    sg2 = SineGenerator(fs=100, f=1)
 
-    sg.amp = 100
 
-    print(sg.get_samples(10))
+    sig = sg1.get_samples(T=10) + sg2.get_samples(T=10)
+    
+    plt.plot(sig)
+    plt.show()
