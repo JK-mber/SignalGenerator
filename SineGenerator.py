@@ -152,18 +152,11 @@ class SineGenerator:
 
     @property
     def amp(self):
-        """
-        Amplitude property (read/write).
-
-        Raises:
-            ValueError: If the supplied amplitude is not larger than 0
-        """
+        """Amplitude property (read/write)."""
         return self._amp
 
     @amp.setter
     def amp(self, amp):
-        if amp <= 0:
-            raise ValueError('The amplitude must be larger than 0')
         self._amp = amp
 
     @property
@@ -180,9 +173,13 @@ class SineGenerator:
     def phase(self, phase):
         self._phase = phase % (np.pi*2)
 
+print(__name__)
 if __name__ == "__main__":
 
     sg = SineGenerator(fs=100, f=12.5)
+    print(sg.get_samples(T=0.1))
+    print(sg.get_samples(N=5))
 
-    for i in range(20):
-        print(sg.get_samples(1))
+    sg.amp = 100
+
+    print(sg.get_samples(10))
