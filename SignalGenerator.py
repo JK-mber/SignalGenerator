@@ -1,7 +1,7 @@
 """
-A SineGenerator module.
+A SignalGenerator module.
 
-A SineGenerator object can be initiated to return discrete samples for a sine wave.
+A SignalGenerator object can be initiated to return discrete samples for a sine wave.
 
 The sampling rate, frequency, amplitude and instantaneous phase are adjustable.
 
@@ -12,7 +12,7 @@ TODO:
 
 Author:
     Name: Johannes Engell Kamber
-    Last edited: 2016-09-30
+    Last edited: 2018-11-10
     License: Published under GNU GPLv3
 """
 
@@ -20,26 +20,29 @@ import math
 import warnings
 import numpy as np
 
-class SineGenerator:
+class SignalGenerator:
     """
-    Creates a SineGenerator object which is used to generate descrete sine waves
+    Creates a SignalGenerator object which is used to generate descrete signals, e.g. sine waves or white noise
     """
 
-    def __init__(self, fs=None, f=None, amp=None, phase=None):
+    def __init__(self, sig_type=None, fs=None, f=None, amp=None, phase=None):
         """
         Initiate the SineGenetor object with a set of attributes.
 
         Attributes:
+            sig_type (optional one of ['sine','noise'/'wn'/'white']): Type of signal (default 'sine')
             fs (optional [int]): The sampling frequency. Must be larger than 0. (default 48000)
-            f (optional [number]): Frequency. (default 500)
-            amp (optional [number]): Amplitude. (default 1)
-            phase (optional [number]): Initial phase shift in radians(default 0)
+            f (optional [number]): Frequency of sine. (default 500)
+            amp (optional [number]): Amplitude of signal (peak for sine, or multiplier on the noise). (default 1)
+            phase (optional [number]): Initial phase shift of sine in radians(default 0)
 
         Examples:
-            >>> sg = SineGenerator()
-            >>> sg = SineGenerator(44100, 200, 0.2, -math.pi)
-            >>> sg = SineGenerator(amp = 0.2)
+            >>> sg = SignalGenerator()
+            >>> sg = SignalGenerator(44100, 200, 0.2, -math.pi)
+            >>> sg = SignalGenerator(amp=0.2)
         """
+        if sig_type is None:
+            sig_type = 'sine'
         if fs is None:
             fs = 48000
         if f is None:
@@ -48,21 +51,24 @@ class SineGenerator:
             amp = 1
         if phase is None:
             phase = 0
+        self._sig_type = sig_type
         self._fs = fs
         self._f = f
         self._amp = amp
         self._phase = phase
 
-        self.fs = fs
-        self.f = f
+        if sig_type in ['sine']:
+            self.fs = fs
+            self.f = f
+            self.phase = phase
         self.amp = amp
-        self.phase = phase
+        self.sig_type = sig_type
 
     def get_samples(self, N=None, T=None, dtype=None):
         """
         Return a number of discrete samples as a NumPy array.
 
-        The method updates the current phase of the SineGenerator, so that
+        The method updates the current phase of the SignalGenerator, so that
         subsequent calls to    get_samples() are appendable.
         If the frequency 0 is set, the returned values will represent a DC
         signal of the set amplitude.
@@ -78,7 +84,7 @@ class SineGenerator:
             numpy.ndarray: Array of data in the given data type
 
         Examples:
-            >>> sg = SineGenerator()
+            >>> sg = SignalGenerator()
             >>> x = sg.get_samples(2) # Get 2 discrete samples. Equivalent to sg.get_samles(N=2)
             >>> x
             [0., 0.01]
@@ -103,10 +109,31 @@ class SineGenerator:
         if N <= 0:
             raise ValueError('The number of samples cannot be 0')
 
-        t = np.arange(0, N) / self.fs
-        sig = self.amp * np.sin(2*np.pi * self.f * t + self.phase)
-        self.phase = self.phase + 2*np.pi*N/self.fs*self.f
+        if self.sig_type in ['sine']:
+            t = np.arange(0, N) / self.fs
+            sig = self.amp * np.sin(2*np.pi * self.f * t + self.phase)
+            self.phase = self.phase + 2*np.pi*N/self.fs*self.f
+        elif self.sig_type in ['noise', 'wn', 'white']:
+            sig = self.amp * np.random.randn(int(N))
+
         return sig
+
+    @property
+    def sig_type(self):
+        """
+        Signal type. 
+        Accepts either 'sine' for a sine wave, or 'noise', 'wn' or 'white' for white noise (random gaussian distribution)
+
+        Raises:
+            ValueError: if the supplied value is not one of the accepted values
+        """
+        return self._sig_type
+
+    @sig_type.setter
+    def sig_type(self, sig_type):
+        if sig_type not in ['sine', 'noise', 'wn', 'white']:
+            raise ValueError('The type must be one of the accepted values')
+        self._sig_type = sig_type
 
     @property
     def fs(self):
@@ -164,8 +191,8 @@ class SineGenerator:
         """
         Phase property (read/write).
 
-        Represents the current phase of the sine generator in radians.
-        Any number is accepted and adjusted to be in the interval [0.; math.pi*2[
+        Represents the current phase of the generator in radians.
+        Any number is accepted and truncated to be in the interval [0.; math.pi*2[
         """
         return self._phase
 
@@ -177,12 +204,16 @@ print(__name__)
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
+    fs = 100;
+    sg1 = SignalGenerator(fs=fs, f=1)
+    sg2 = SignalGenerator(fs=fs, f=12.5)
+    sg3 = SignalGenerator(fs=fs, sig_type='noise', amp=0.5)
+
+
     sig = np.array([])
-    sg1 = SineGenerator(fs=100, f=12.5)
-    sg2 = SineGenerator(fs=100, f=1)
-
-
-    sig = sg1.get_samples(T=10) + sg2.get_samples(T=10)
+    T = 10;
+    sig = sg1.get_samples(T=T) + sg2.get_samples(T=T) + sg3.get_samples(T=T)
+    
     
     plt.plot(sig)
     plt.show()
