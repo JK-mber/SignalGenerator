@@ -1,18 +1,21 @@
 """
 A SignalGenerator module.
 
-A SignalGenerator object can be initiated to return discrete samples for a sine wave.
+A SignalGenerator object can be initiated to return discrete samples for a
+sine wave.
 
 The sampling rate, frequency, amplitude and instantaneous phase are adjustable.
 
-Implemented with duck typing approach (no type checking, only necessary value checking). Additionally, prototypes are used extensively to ensure simple usage.
+Implemented with duck typing approach (no type checking, only necessary value
+checking). Additionally, prototypes are used extensively to ensure simple
+usage.
 
 TODO:
     - Implement dynamic data type
 
 Author:
     Name: Johannes Engell Kamber
-    Last edited: 2018-11-10
+    Last edited: 2019-02-26
     License: Published under GNU GPLv3
 """
 
@@ -20,9 +23,11 @@ import math
 import warnings
 import numpy as np
 
+
 class SignalGenerator:
     """
-    Creates a SignalGenerator object which is used to generate descrete signals, e.g. sine waves or white noise
+    Creates a SignalGenerator object which is used to generate descrete
+        signals, e.g. sine waves or white noise
     """
 
     def __init__(self, sig_type=None, fs=None, f=None, amp=None, phase=None):
@@ -30,11 +35,15 @@ class SignalGenerator:
         Initiate the SineGenetor object with a set of attributes.
 
         Attributes:
-            sig_type (optional one of ['sine','noise'/'wn'/'white']): Type of signal (default 'sine')
-            fs (optional [int]): The sampling frequency. Must be larger than 0. (default 48000)
+            sig_type (optional one of ['sine','noise'/'wn'/'white']): Type of
+                signal (default 'sine')
+            fs (optional [int]): The sampling frequency. Must be larger than 0.
+                (default 48000)
             f (optional [number]): Frequency of sine. (default 500)
-            amp (optional [number]): Amplitude of signal (peak for sine, or multiplier on the noise). (default 1)
-            phase (optional [number]): Initial phase shift of sine in radians(default 0)
+            amp (optional [number]): Amplitude of signal (peak for sine, or
+                multiplier on the noise). (default 1)
+            phase (optional [number]): Initial phase shift of sine in radians
+                (default 0)
 
         Examples:
             >>> sg = SignalGenerator()
@@ -74,9 +83,12 @@ class SignalGenerator:
         signal of the set amplitude.
 
         Arguments:
-            N (optional [number]): Number of discrete samples. Must be larger than 0 (default fs). N is rounded to nearest integer.
-            T (optional [number]): Total time of returned samples. Must be larger than 0. (default 1)
-            dtype (optional [numpy.dtype]): The data type of returned samples (default numpy.float32
+            N (optional [number]): Number of discrete samples. Must be larger
+                than 0 (default fs). N is rounded to nearest integer.
+            T (optional [number]): Total time of returned samples. Must be
+                larger than 0. (default 1)
+            dtype (optional [numpy.dtype]): The data type of returned samples
+                (default numpy.float32)
 
             If both N and T is supplied, T is ignored.
 
@@ -85,12 +97,14 @@ class SignalGenerator:
 
         Examples:
             >>> sg = SignalGenerator()
-            >>> x = sg.get_samples(2) # Get 2 discrete samples. Equivalent to sg.get_samles(N=2)
+            >>> x = sg.get_samples(2) # Get 2 discrete samples. Equivalent to
+                sg.get_samles(N=2)
             >>> x
             [0., 0.01]
             >>> y = sg.get_samles(T=3) # Get 3 seconds of discrete data
             >>> y
-            [0.2, 0.03, ...] # Can be appended to x, leading to a continuous sine wave
+            [0.2, 0.03, ...] # Can be appended to x, leading to a continuous
+                sine wave
             >>> x.dtype
             dtype('float32')
             >>> type(x)
@@ -103,7 +117,8 @@ class SignalGenerator:
             N = T * self.fs
         if N is not None and T is not None:
             if T * self.fs != N:
-                raise ValueError('Specified N and T lead to different sample sizes')
+                raise ValueError(
+                    'Specified N and T lead to different sample sizes')
         if dtype is None:
             dtype = np.float32
         if N <= 0:
@@ -121,8 +136,9 @@ class SignalGenerator:
     @property
     def sig_type(self):
         """
-        Signal type. 
-        Accepts either 'sine' for a sine wave, or 'noise', 'wn' or 'white' for white noise (random gaussian distribution)
+        Signal type.
+        Accepts either 'sine' for a sine wave, or 'noise', 'wn' or 'white' for
+            white noise (random gaussian distribution)
 
         Raises:
             ValueError: if the supplied value is not one of the accepted values
@@ -144,7 +160,8 @@ class SignalGenerator:
             ValueError: If the supplied sampling frequency is not larger than 0
 
         Warnings:
-            Issues a warning if the Nyquist frequency is smaller than the set frequency
+            Issues a warning if the Nyquist frequency is smaller than the set
+                frequency
         """
         return self._fs
 
@@ -153,7 +170,8 @@ class SignalGenerator:
         if fs < 0:
             raise ValueError('The sampling frequency must be larger than 0')
         if fs < self.f*2:
-            warnings.warn('The Nyquist frequency is smaller than the frequency f')
+            warnings.warn(
+                'The Nyquist frequency is smaller than the frequency f')
         self._fs = fs
 
     @property
@@ -165,7 +183,8 @@ class SignalGenerator:
             ValueError: If the supplied frequency is smaller than 0
 
         Warnings:
-            Issues a wasrning if the frequency is larger than the Nyquist frequency
+            Issues a warning if the frequency is larger than the Nyquist
+                frequency
         """
         return self._f
 
@@ -174,7 +193,8 @@ class SignalGenerator:
         if f < 0:
             raise ValueError('The frequency must be larger than or equal to 0')
         if f > self.fs/2:
-            warnings.warn('The frequency is larger than half the sampling frequency fs')
+            warnings.warn(
+                'The frequency is larger than half the sampling frequency fs')
         self._f = f
 
     @property
@@ -192,7 +212,8 @@ class SignalGenerator:
         Phase property (read/write).
 
         Represents the current phase of the generator in radians.
-        Any number is accepted and truncated to be in the interval [0.; math.pi*2[
+        Any number is accepted and truncated to be in the interval
+            [0.; math.pi*2[
         """
         return self._phase
 
@@ -200,20 +221,18 @@ class SignalGenerator:
     def phase(self, phase):
         self._phase = phase % (np.pi*2)
 
-print(__name__)
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    fs = 100;
+    fs = 100
     sg1 = SignalGenerator(fs=fs, f=1)
     sg2 = SignalGenerator(fs=fs, f=12.5)
     sg3 = SignalGenerator(fs=fs, sig_type='noise', amp=0.5)
 
-
     sig = np.array([])
-    T = 10;
+    T = 10
     sig = sg1.get_samples(T=T) + sg2.get_samples(T=T) + sg3.get_samples(T=T)
-    
-    
+
     plt.plot(sig)
     plt.show()
